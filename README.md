@@ -3,7 +3,7 @@
 
 </br > ![System Schema](https://github.com/tamersum11/esp32-smart-agriculture/blob/master/schema/images/Aktarsis%20Sistem%20%C5%9Eemas%C4%B1.png)
 
-# AKTARSIS Device
+## AKTARSIS Device
 
 - AKTARSIS Device is an embedded system and uses the WiFi-BLE module ESP32-Solo-1, which is located on the ESP32 Devkit C V4 development board, as a microcontroller unit.
 - With FreeRTOS, the microcontroller works as a real-time operating system and performs multitasking at the same time with specified task structures.
@@ -14,14 +14,17 @@
 
 </br > ![Device Schema](https://github.com/tamersum11/esp32-smart-agriculture/blob/master/schema/images/cihaz-%C5%9Fema.png)
 
-# AKTARSIS Database EER Diagram
+## AKTARSIS Database EER Diagram
 </br > ![Aktarsis Database](/schema/images/aktarsisdb-eerdiagram.PNG)
 
-# Queries to AKTARSIS Database in Google Cloud Platform
+## Queries to AKTARSIS Database in Google Cloud Platform
 </br > ![Aktarsis GCP](/schema/images/gcp.png)
 
-# Circuit Schema
+## Circuit Schema
 You can see circuit schema of the system in [here](/schema/aktarsis_device.fzz).
 
+## AKTARSIS Desktop App
+You can see AKTARSIS Desktop App in [here](https://github.com/tamersum11/aktarsis-desktop-app).
+
 ## Graduation Project
-[Istanbul Medeniyet University](https://www.medeniyet.edu.tr/tr) Electrical - Electronics Engineering Program Graduation Project.
+[Istanbul Medeniyet University](https://www.medeniyet.edu.tr/tr), Faculty Of Engineering And Natural Sciences, Electrical And Electronics Engineering Program Graduation Project.
