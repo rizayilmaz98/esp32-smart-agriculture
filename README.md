@@ -1,5 +1,5 @@
 # AKTARSIS Device: IoT based Smart Agriculture System for ESP32
-- In the Smart Agriculture System Device, it is aimed to feed the planted crop at an optimum level, to minimize human-induced agricultural errors and to produce the crop in the most effective way, thanks to agricultural control algorithms.
+- In the Smart Agriculture System (AKTARSIS) Device, it is aimed to feed the planted crop at an optimum level, to minimize human-induced agricultural errors and to produce the crop in the most effective way, thanks to agricultural control algorithms.
 
 </br > ![System Schema](https://github.com/tamersum11/esp32-smart-agriculture/blob/master/schema/images/Aktarsis%20Sistem%20%C5%9Eemas%C4%B1.png)
 
