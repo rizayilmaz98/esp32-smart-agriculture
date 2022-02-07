@@ -136,8 +136,8 @@ unsigned int feeding_counter;
 int feed_range;
 
 void setWifiConnection(){
-  Serial.println(String("Connecting to ") + Credentials::ssid);
-  WiFi.begin(Credentials::ssid, Credentials::pass);
+  Serial.println(String("Connecting to ") + ssid);
+  WiFi.begin(ssid, pass);
 
   unsigned long startAttemptTimeWiFi = millis();
 
@@ -313,7 +313,7 @@ void insertDeviceProccessTable(char* proccess_id)
     //Add valuees into query
     sprintf(transform_query, 
             query.c_str(),
-            Credentials::device_id,
+            device_id,
             proccess_id,
             datestring,
             timestring,
@@ -353,7 +353,7 @@ void insertPanelTable(void)
     //Add valuees into query
     sprintf(transform_query, 
             query.c_str(),
-            Credentials::device_id,
+            device_id,
             datestring,
             avrg_gen_power,
             avrg_con_power);
@@ -378,8 +378,8 @@ void setServerConnection()
   Serial.print("Connecting to SQL Server @ ");
   Serial.print(server_addr);
   Serial.println(String(", Port = ") + server_port);
-  Serial.println(String("User = ") + Credentials::user + String(", PW = ") + Credentials::password + String(", DB = ") + Credentials::database_name);
-  if (conn.connectNonBlocking(server_addr, server_port, Credentials::user, Credentials::password) != RESULT_FAIL)
+  Serial.println(String("User = ") + user + String(", PW = ") + password + String(", DB = ") + database_name);
+  if (conn.connectNonBlocking(server_addr, server_port, user, password) != RESULT_FAIL)
   {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     //Set Device Info
@@ -396,21 +396,21 @@ void setServerConnection()
     serverText = String("Server Connection Failed to:");
     Serial.println("\nConnect failed. Trying again on next iteration.");
 
-    user_id = DefaultDevice::default_user_id;
-    plant_id = DefaultDevice::default_plant_id;
-    soil_id = DefaultDevice::default_soil_id;
-    location_info = DefaultDevice::default_location;
-    device_ph = DefaultDevice::default_ph;
-    device_time = DefaultDevice::default_feeding_time;
+    user_id = default_user_id;
+    plant_id = default_plant_id;
+    soil_id = default_soil_id;
+    location_info = default_location;
+    device_ph = default_ph;
+    device_time = default_feeding_time;
 
-    ideal_temp_min = DefaultDevice::default_ideal_temp_min;
-    ideal_temp_max = DefaultDevice::default_ideal_temp_max;
-    nonideal_temp_min = DefaultDevice::default_nonideal_temp_min;
-    nonideal_temp_max = DefaultDevice::default_nonideal_temp_max;
-    hum_min = DefaultDevice::default_hum_min;
-    hum_max = DefaultDevice::default_hum_max;
-    ph_min = DefaultDevice::default_ph_min;
-    ph_max = DefaultDevice::default_ph_max;
+    ideal_temp_min = default_ideal_temp_min;
+    ideal_temp_max = default_ideal_temp_max;
+    nonideal_temp_min = default_nonideal_temp_min;
+    nonideal_temp_max = default_nonideal_temp_max;
+    hum_min = default_hum_min;
+    hum_max = default_hum_max;
+    ph_min = default_ph_min;
+    ph_max = default_ph_max;
   }
 
 }
@@ -448,13 +448,13 @@ void checkDateTime(const RtcDateTime& dt)
     pos = 0;
     aktarsiservo.write(pos);
     vTaskDelay(100 / portTICK_PERIOD_MS);
-    insertDeviceProccessTable(&Credentials::feeding_id);
-    insertDeviceProccessTable(&Credentials::measurment_id);
+    insertDeviceProccessTable(&feeding_id);
+    insertDeviceProccessTable(&measurment_id);
   }
   else if(String(timestring) == lightning_time)
   {
     digitalWrite(LIGTHNING_PIN, LOW);
-    insertDeviceProccessTable(&Credentials::lightning_id);
+    insertDeviceProccessTable(&lightning_id);
     insertPanelTable();
   }
   else if(String(timestring) == lightning_stop)
@@ -475,21 +475,21 @@ void WiFiConnectionTask(void* parameter)
       wiFiText = String("WiFi Connection Failed!");
       setWifiConnection();
 
-      user_id = DefaultDevice::default_user_id;
-      plant_id = DefaultDevice::default_plant_id;
-      soil_id = DefaultDevice::default_soil_id;
-      location_info = DefaultDevice::default_location;
-      device_ph = DefaultDevice::default_ph;
-      device_time = DefaultDevice::default_feeding_time;
+      user_id = default_user_id;
+      plant_id = default_plant_id;
+      soil_id = default_soil_id;
+      location_info = default_location;
+      device_ph = default_ph;
+      device_time = default_feeding_time;
 
-      ideal_temp_min = DefaultDevice::default_ideal_temp_min;
-      ideal_temp_max = DefaultDevice::default_ideal_temp_max;
-      nonideal_temp_min = DefaultDevice::default_nonideal_temp_min;
-      nonideal_temp_max = DefaultDevice::default_nonideal_temp_max;
-      hum_min = DefaultDevice::default_hum_min;
-      hum_max = DefaultDevice::default_hum_max;
-      ph_min = DefaultDevice::default_ph_min;
-      ph_max = DefaultDevice::default_ph_max;
+      ideal_temp_min = default_ideal_temp_min;
+      ideal_temp_max = default_ideal_temp_max;
+      nonideal_temp_min = default_nonideal_temp_min;
+      nonideal_temp_max = default_nonideal_temp_max;
+      hum_min = default_hum_min;
+      hum_max = default_hum_max;
+      ph_min = default_ph_min;
+      ph_max = default_ph_max;
 
     }
     else{
@@ -563,7 +563,7 @@ void soilHumidityTask(void* parameter)
       {
         pos = 0;
         aktarsiservo.write(pos);
-        insertDeviceProccessTable(&Credentials::feeding_id);
+        insertDeviceProccessTable(&feeding_id);
       }
     }
     else if(moisture > h_max)
@@ -665,7 +665,7 @@ void wiFiServerConDisplay()
   display.print(serverText);
   display.setTextSize(1);
   display.setCursor(0, 35);
-  display.print(Credentials::hostname);
+  display.print(hostname);
   
   display.display(); 
 }
