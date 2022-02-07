@@ -22,3 +22,6 @@
 
 # Circuit Schema
 You can see circuit schema of the system in [here](/schema/aktarsis_device.fzz).
+
+## Graduation Project
+[Istanbul Medeniyet University](https://www.medeniyet.edu.tr/tr) Electrical - Electronics Engineering Program Graduation Project.
