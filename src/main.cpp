@@ -1,9 +1,5 @@
 #include <Arduino.h>
 #include <string>
-#include "defines.h"
-#include "Credentials.h"
-#include "DefaultDevice.h"
-#include "Aktarsis_Image.h"
 
 #include <MySQL_Generic_WiFi.h>
 #include <ThreeWire.h>  
@@ -13,6 +9,12 @@
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
 #include <ESP32Servo.h>
+
+#include "defines.h"
+#include "Credentials.h"
+#include "DefaultDevice.h"
+#include "AktarsisImage.h"
+#include "SetQuery.h"
 
 #define WIFI_TIMEOUT_MS 20000
 
@@ -55,7 +57,29 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 //Declaration for Feeding Control
 Servo aktarsiservo;
 
-//Definitions for sensors parameters
+//Declaration for Query Transform
+char transform_query[150];
+
+//Declarations for Device info
+String user_id;
+String plant_id;
+String soil_id;
+String location_info;
+String device_ph;
+String device_time;
+
+//Declarations for Device Parameters
+String ideal_temp_min;
+String ideal_temp_max;
+String nonideal_temp_min;
+String nonideal_temp_max;
+String hum_min;
+String hum_max;
+String ph_min;
+String ph_max;
+String feeding_range;
+
+//Declarations for sensors parameters
 uint16_t moisture_bit;
 uint16_t pH_bit;
 double moisture;
@@ -112,8 +136,8 @@ unsigned int feeding_counter;
 int feed_range;
 
 void setWifiConnection(){
-  Serial.println(String("Connecting to ") + ssid);
-  WiFi.begin(ssid, pass);
+  Serial.println(String("Connecting to ") + Credentials::ssid);
+  WiFi.begin(Credentials::ssid, Credentials::pass);
 
   unsigned long startAttemptTimeWiFi = millis();
 
@@ -134,39 +158,9 @@ void setWifiConnection(){
   
 }
 
-String setDeviceInfoQuery()
-{
-  return String("SELECT * FROM ") + String(database_name) + String(".") + String(device_table_name) + String(" WHERE ") 
-                                  + String(query_coloumn_name_dt) + String(" = ") + String(device_id);
-}
-
-String setDeviceParametersQuery()
-{
-  return String("SELECT * FROM ") + String(database_name) + String(".") + String(plant_table_name) + String(" WHERE ") 
-                                  + String(query_coloumn_name_pt) + String(" = ") + String(plant_id);
-}
-
-String setInsertDeviceProccessQuery()
-{
-  return String("INSERT INTO ") + String(database_name) + String(".") + String(device_proccess_table_name) + String(" (")
-                                + /*String(query_coloumn_name_dpt0) + String(", ") +*/ String(query_coloumn_name_dt) + String(", ") 
-                                + String(query_coloumn_name_dpt2) + String(", ") + String(query_coloumn_name_dpt3) + String(", ") 
-                                + String(query_coloumn_name_dpt4) + String(", ") + String(query_coloumn_name_dpt5) + String(", ") 
-                                + String(query_coloumn_name_dpt6) + String(", ") + String(query_coloumn_name_dpt7) + String(", ") 
-                                + String(query_coloumn_name_dpt8) + String(") VALUES (%s, %s, '%s', '%s', %s, %s, %s, %s)");
-}
-
-String setPanelProccessQuery()
-{
-  return String("INSERT INTO ") + String(database_name) + String(".") + String(solar_panel_table_name) + String(" (")
-                                + String(query_coloumn_name_sp1) + String(", ") + String(query_coloumn_name_sp2) 
-                                + String(", ") + String(query_coloumn_name_sp3) + String(", ") + String(query_coloumn_name_sp4) 
-                                + String(") VALUES (%s, '%s', %s, %s)");
-}
-
 void setDeviceParameters(void)
 {
-  String query = setDeviceParametersQuery();
+  String query = SetQuery::setDeviceParametersQuery() + plant_id;
 
   Serial.println("====================================================");
   Serial.println("> Running SELECT with dynamically supplied parameter");
@@ -241,7 +235,7 @@ void setDeviceParameters(void)
 
 void setDeviceInfo(void)
 {
-  String query = setDeviceInfoQuery();
+  String query = SetQuery::setDeviceInfoQuery();
 
   Serial.println("====================================================");
   Serial.println("> Running SELECT with dynamically supplied parameter");
@@ -306,7 +300,7 @@ void insertDeviceProccessTable(char* proccess_id)
   // Initiate the query class instance
   MySQL_Query query_mem = MySQL_Query(&conn);
 
-  String query = setInsertDeviceProccessQuery();
+  String query = SetQuery::setInsertDeviceProccessQuery();
 
   if (conn.connected())
   {
@@ -319,7 +313,7 @@ void insertDeviceProccessTable(char* proccess_id)
     //Add valuees into query
     sprintf(transform_query, 
             query.c_str(),
-            device_id,
+            Credentials::device_id,
             proccess_id,
             datestring,
             timestring,
@@ -348,7 +342,7 @@ void insertPanelTable(void)
   // Initiate the query class instance
   MySQL_Query query_mem = MySQL_Query(&conn);
 
-  String query = setPanelProccessQuery();
+  String query = SetQuery::setPanelProccessQuery();
 
   if (conn.connected())
   {
@@ -359,7 +353,7 @@ void insertPanelTable(void)
     //Add valuees into query
     sprintf(transform_query, 
             query.c_str(),
-            device_id,
+            Credentials::device_id,
             datestring,
             avrg_gen_power,
             avrg_con_power);
@@ -384,8 +378,8 @@ void setServerConnection()
   Serial.print("Connecting to SQL Server @ ");
   Serial.print(server_addr);
   Serial.println(String(", Port = ") + server_port);
-  Serial.println(String("User = ") + user + String(", PW = ") + password + String(", DB = ") + database_name);
-  if (conn.connectNonBlocking(server_addr, server_port, user, password) != RESULT_FAIL)
+  Serial.println(String("User = ") + Credentials::user + String(", PW = ") + Credentials::password + String(", DB = ") + Credentials::database_name);
+  if (conn.connectNonBlocking(server_addr, server_port, Credentials::user, Credentials::password) != RESULT_FAIL)
   {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     //Set Device Info
@@ -396,30 +390,27 @@ void setServerConnection()
     setDeviceParameters();
 
     serverText = String("Server Connected to:");
-
-    //Close Server Connection
-    //conn.close();
   } 
   else 
   {
     serverText = String("Server Connection Failed to:");
     Serial.println("\nConnect failed. Trying again on next iteration.");
 
-    user_id = default_user_id;
-    plant_id = default_plant_id;
-    soil_id = default_soil_id;
-    location_info = default_location;
-    device_ph = default_ph;
-    device_time = default_feeding_time;
+    user_id = DefaultDevice::default_user_id;
+    plant_id = DefaultDevice::default_plant_id;
+    soil_id = DefaultDevice::default_soil_id;
+    location_info = DefaultDevice::default_location;
+    device_ph = DefaultDevice::default_ph;
+    device_time = DefaultDevice::default_feeding_time;
 
-    ideal_temp_min = default_ideal_temp_min;
-    ideal_temp_max = default_ideal_temp_max;
-    nonideal_temp_min = default_nonideal_temp_min;
-    nonideal_temp_max = default_nonideal_temp_max;
-    hum_min = default_hum_min;
-    hum_max = default_hum_max;
-    ph_min = default_ph_min;
-    ph_max = default_ph_max;
+    ideal_temp_min = DefaultDevice::default_ideal_temp_min;
+    ideal_temp_max = DefaultDevice::default_ideal_temp_max;
+    nonideal_temp_min = DefaultDevice::default_nonideal_temp_min;
+    nonideal_temp_max = DefaultDevice::default_nonideal_temp_max;
+    hum_min = DefaultDevice::default_hum_min;
+    hum_max = DefaultDevice::default_hum_max;
+    ph_min = DefaultDevice::default_ph_min;
+    ph_max = DefaultDevice::default_ph_max;
   }
 
 }
@@ -457,13 +448,13 @@ void checkDateTime(const RtcDateTime& dt)
     pos = 0;
     aktarsiservo.write(pos);
     vTaskDelay(100 / portTICK_PERIOD_MS);
-    insertDeviceProccessTable(feeding_id);
-    insertDeviceProccessTable(measurment_id);
+    insertDeviceProccessTable(&Credentials::feeding_id);
+    insertDeviceProccessTable(&Credentials::measurment_id);
   }
   else if(String(timestring) == lightning_time)
   {
     digitalWrite(LIGTHNING_PIN, LOW);
-    insertDeviceProccessTable(lightning_id);
+    insertDeviceProccessTable(&Credentials::lightning_id);
     insertPanelTable();
   }
   else if(String(timestring) == lightning_stop)
@@ -484,21 +475,21 @@ void WiFiConnectionTask(void* parameter)
       wiFiText = String("WiFi Connection Failed!");
       setWifiConnection();
 
-      user_id = default_user_id;
-      plant_id = default_plant_id;
-      soil_id = default_soil_id;
-      location_info = default_location;
-      device_ph = default_ph;
-      device_time = default_feeding_time;
+      user_id = DefaultDevice::default_user_id;
+      plant_id = DefaultDevice::default_plant_id;
+      soil_id = DefaultDevice::default_soil_id;
+      location_info = DefaultDevice::default_location;
+      device_ph = DefaultDevice::default_ph;
+      device_time = DefaultDevice::default_feeding_time;
 
-      ideal_temp_min = default_ideal_temp_min;
-      ideal_temp_max = default_ideal_temp_max;
-      nonideal_temp_min = default_nonideal_temp_min;
-      nonideal_temp_max = default_nonideal_temp_max;
-      hum_min = default_hum_min;
-      hum_max = default_hum_max;
-      ph_min = default_ph_min;
-      ph_max = default_ph_max;
+      ideal_temp_min = DefaultDevice::default_ideal_temp_min;
+      ideal_temp_max = DefaultDevice::default_ideal_temp_max;
+      nonideal_temp_min = DefaultDevice::default_nonideal_temp_min;
+      nonideal_temp_max = DefaultDevice::default_nonideal_temp_max;
+      hum_min = DefaultDevice::default_hum_min;
+      hum_max = DefaultDevice::default_hum_max;
+      ph_min = DefaultDevice::default_ph_min;
+      ph_max = DefaultDevice::default_ph_max;
 
     }
     else{
@@ -572,7 +563,7 @@ void soilHumidityTask(void* parameter)
       {
         pos = 0;
         aktarsiservo.write(pos);
-        insertDeviceProccessTable(feeding_id);
+        insertDeviceProccessTable(&Credentials::feeding_id);
       }
     }
     else if(moisture > h_max)
@@ -616,12 +607,10 @@ void temperatureTask(void* parameter)
     else if(air_temp < nt_min)
     {
       Serial.println("WARNING!!! Temperature is below the nonideal min temp");
-      //insertDeviceProccessTable(measurment_id);
     }
     else if(air_temp > nt_max)
     {
       Serial.println("WARNING!!! Temperature is above the nonideal max temp");
-      //insertDeviceProccessTable(measurment_id);
     }
     else 
     {
@@ -635,7 +624,7 @@ void temperatureTask(void* parameter)
 void aktarsisLogoDisplay()
 {
   display.clearDisplay();
-  display.drawBitmap(0, 0, image_data_aktarsis_image, 128, 64, 1);
+  display.drawBitmap(0, 0, AktarsisImage::image_data_aktarsis_image, 128, 64, 1);
   display.display();
   display.startscrollright(0x00, 0x0F);
   vTaskDelay(2000 / portTICK_PERIOD_MS);
@@ -676,7 +665,7 @@ void wiFiServerConDisplay()
   display.print(serverText);
   display.setTextSize(1);
   display.setCursor(0, 35);
-  display.print(hostname);
+  display.print(Credentials::hostname);
   
   display.display(); 
 }
@@ -747,7 +736,6 @@ void powerDisplay()
 {
   display.clearDisplay();
   display.setTextColor(WHITE);
-  // clear display
   display.clearDisplay();
   
   // display generated power
@@ -777,7 +765,6 @@ void dateTimeDisplay()
 {
   display.clearDisplay();
   display.setTextColor(WHITE);
-  // clear display
   display.clearDisplay();
   
   // display date
