@@ -19,3 +19,6 @@
 
 # Queries to AKTARSIS Database in Google Cloud Platform
 </br > ![Aktarsis GCP](/schema/images/gcp.png)
+
+# Circuit Schema
+You can see circuit schema of the system in [here](/schema/aktarsis_device.fzz).
