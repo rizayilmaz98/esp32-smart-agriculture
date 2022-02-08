@@ -160,7 +160,7 @@ void setWifiConnection(){
 
 void setDeviceParameters(void)
 {
-  String query = SetQuery::setDeviceParametersQuery() + plant_id;
+  String query = SetQuery::setDeviceParametersQuery() + String(plant_id);
 
   Serial.println("====================================================");
   Serial.println("> Running SELECT with dynamically supplied parameter");
